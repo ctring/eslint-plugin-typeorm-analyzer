@@ -1,5 +1,5 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
-import findSchema from '../../../src/lib/rules/find-schema';
+import findSchema from '../../src/rules/find-schema';
 
 const ruleTester = new ESLintUtils.RuleTester({
   parser: '@typescript-eslint/parser'

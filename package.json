@@ -4,8 +4,10 @@
   "description": "",
   "exports": "./dist/src/index.js",
   "scripts": {
-    "build": "tsc",
-    "test": "mocha dist/tests --recursive"
+    "build": "npm run clean && tsc",
+    "test": "mocha dist/tests --recursive",
+    "clean": "rimraf js/",
+    "rimraf": "./node_modules/rimraf/bin.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +24,7 @@
     "eslint": "^8.38.0",
     "mocha": "^10.2.0",
     "prettier": "^2.8.7",
+    "rimraf": "^3.0.2",
     "typescript": "^5.0.4"
   }
 }

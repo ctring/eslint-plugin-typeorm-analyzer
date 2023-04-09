@@ -1,4 +1,4 @@
-import findSchema from './lib/rules/find-schema';
+import findSchema from './rules/find-schema';
 
 const ruleModule = {
   rules: {
