@@ -1,12 +1,17 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
+import { JsonMessage } from './message';
+import { ReportDescriptor } from '@typescript-eslint/utils/dist/ts-eslint';
 
 const findSchema = ESLintUtils.RuleCreator.withoutDocs({
   create(context) {
     return {
+      // Select only class definitions.
       ClassDeclaration(node) {
+        // Return if the class is not decorated.
         if (!node.decorators) {
           return;
         }
+        // Find the @Entity() decorator.
         for (const decorator of node.decorators) {
           if (
             decorator.expression.type === 'CallExpression' &&
@@ -33,7 +38,7 @@ const findSchema = ESLintUtils.RuleCreator.withoutDocs({
       recommended: 'warn'
     },
     messages: {
-      entity: '{ type: "entity", name: "{{ name }}" }'
+      entity: new JsonMessage('entity').toString()
     },
     type: 'suggestion',
     schema: []
