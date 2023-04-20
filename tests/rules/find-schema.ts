@@ -28,9 +28,9 @@ ruleTester.run('find-schema', findSchema, {
       `,
       errors: [
         {
-          messageId: 'entity',
+          messageId: 'json',
           data: {
-            name: 'User'
+            json: '{"type":"entity","name":"User"}'
           }
         }
       ]

@@ -1,6 +1,5 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
-import { JsonMessage } from './message';
-import { ReportDescriptor } from '@typescript-eslint/utils/dist/ts-eslint';
+import { JsonMessage, createMeta } from './message';
 
 const findSchema = ESLintUtils.RuleCreator.withoutDocs({
   create(context) {
@@ -19,10 +18,10 @@ const findSchema = ESLintUtils.RuleCreator.withoutDocs({
             decorator.expression.callee.name === 'Entity'
           ) {
             context.report({
-              messageId: 'entity',
+              messageId: 'json',
               node: node,
               data: {
-                name: node.id?.name
+                json: new JsonMessage('entity', node.id?.name).toString()
               }
             });
           }
@@ -31,18 +30,7 @@ const findSchema = ESLintUtils.RuleCreator.withoutDocs({
     };
   },
 
-  meta: {
-    docs: {
-      description:
-        'Reports all class definitions that are decorated with @Entity().',
-      recommended: 'warn'
-    },
-    messages: {
-      entity: new JsonMessage('entity').toString()
-    },
-    type: 'suggestion',
-    schema: []
-  },
+  meta: createMeta('Reports all method calls of the repository API.'),
 
   defaultOptions: []
 });
