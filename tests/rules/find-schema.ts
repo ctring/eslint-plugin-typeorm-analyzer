@@ -1,6 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
 import findSchema from '../../src/rules/find-schema';
-import { EntityMessage } from '../../src/rules/message';
+import { EntityMessage } from '../../src/message';
 
 const ruleTester = new ESLintUtils.RuleTester({
   parser: '@typescript-eslint/parser'

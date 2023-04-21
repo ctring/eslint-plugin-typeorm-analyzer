@@ -1,5 +1,6 @@
 import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
-import { EntityMessage, createMeta, createReport } from './message';
+import { EntityMessage } from '../message';
+import { createMeta, createReport } from '../message/utils';
 
 const findSchema = ESLintUtils.RuleCreator.withoutDocs({
   create(context) {
