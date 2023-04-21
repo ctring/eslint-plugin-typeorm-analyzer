@@ -25,7 +25,7 @@ ruleTester.run('find-repository-api', findRepositoryApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('save', 'any')
+            message: new MethodMessage('save', ['any'])
           }
         }
       ]
@@ -41,7 +41,33 @@ ruleTester.run('find-repository-api', findRepositoryApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('findOne', 'Repository<User>')
+            message: new MethodMessage('findOne', ['Repository<User>'])
+          }
+        }
+      ]
+    },
+    {
+      code: `
+      class Repository<T> {}
+      class Cat extends Repository<Animal> {
+        doSave() {
+          return this.save();
+        }
+      }
+      let cat = new Cat();
+      cat.create();
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage('save', ['this', 'Repository<Animal>'])
+          }
+        },
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage('create', ['Cat', 'Repository<Animal>'])
           }
         }
       ]

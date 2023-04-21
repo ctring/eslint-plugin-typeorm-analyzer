@@ -72,19 +72,29 @@ const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
           return;
         }
 
-        // Collect type information of the callee.
         const parserServices = ESLintUtils.getParserServices(context);
         const checker = parserServices.program.getTypeChecker();
         const objType = checker.getTypeAtLocation(
           parserServices.esTreeNodeToTSNodeMap.get(obj)
         );
 
-        context.report(
-          createReport(
-            node,
-            new MethodMessage(method, checker.typeToString(objType))
-          )
-        );
+        // Get the type of the callee.
+        let allTypes = [checker.typeToString(objType)];
+
+        // Collect all base types.
+        const symbol = objType.getSymbol();
+        if (symbol !== undefined) {
+          const baseTypes = checker
+            .getDeclaredTypeOfSymbol(symbol)
+            .getBaseTypes();
+          if (baseTypes !== undefined) {
+            for (const type of baseTypes) {
+              allTypes.push(checker.typeToString(type));
+            }
+          }
+        }
+
+        context.report(createReport(node, new MethodMessage(method, allTypes)));
       }
     };
   },
