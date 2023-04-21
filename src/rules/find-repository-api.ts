@@ -3,8 +3,8 @@ import {
   ESLintUtils,
   TSESTree
 } from '@typescript-eslint/utils';
-import { MethodMessage } from '../message';
-import { createMeta, createReport } from '../message/utils';
+import { MethodMessage } from '../messages';
+import { createMeta, createReport } from '../messages/utils';
 
 const REPOSITORY_API = [
   'createQueryBuilder',

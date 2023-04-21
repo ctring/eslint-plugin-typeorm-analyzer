@@ -1,6 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
 import findRepositoryApi from '../../src/rules/find-repository-api';
-import { MethodMessage } from '../../src/message';
+import { MethodMessage } from '../../src/messages';
 
 const ruleTester = new ESLintUtils.RuleTester({
   parser: '@typescript-eslint/parser',

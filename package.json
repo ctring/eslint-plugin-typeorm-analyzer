@@ -2,7 +2,13 @@
   "name": "eslint-plugin-typeorm-analyzer",
   "version": "1.0.0",
   "description": "",
-  "exports": "./dist/src/index.js",
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./messages": {
+      "types": "./dist/src/messages/index.d.ts",
+      "default": "./dist/src/messages/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc && npm run set-up-eslint-test",
     "test": "mocha dist/tests --recursive --timeout 5000",
