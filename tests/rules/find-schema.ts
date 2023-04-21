@@ -1,5 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
 import findSchema from '../../src/rules/find-schema';
+import { EntityMessage } from '../../src/rules/message';
 
 const ruleTester = new ESLintUtils.RuleTester({
   parser: '@typescript-eslint/parser'
@@ -30,7 +31,7 @@ ruleTester.run('find-schema', findSchema, {
         {
           messageId: 'json',
           data: {
-            json: '{"type":"entity","name":"User"}'
+            message: new EntityMessage('User')
           }
         }
       ]
