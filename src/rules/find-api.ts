@@ -40,10 +40,12 @@ const REPOSITORY_API_WRITE = [
 
 const REPOSITORY_API_OTHER = ['createQueryBuilder', 'query'];
 
+const REPOSITORY_API_TRANSACTION = ['transaction', 'startTransaction'];
+
 // Filters out all method calls that are not part of the Repository API.
 function filterRepositoryApiMethods(
   method: TSESTree.PrivateIdentifier | TSESTree.Expression
-): [string, 'read' | 'write' | 'other'] | undefined {
+): [string, 'read' | 'write' | 'other' | 'transaction'] | undefined {
   let name: string | undefined;
   if (method.type === AST_NODE_TYPES.Identifier) {
     name = method.name;
@@ -65,6 +67,10 @@ function filterRepositoryApiMethods(
 
   if (REPOSITORY_API_OTHER.includes(name)) {
     return [name, 'other'];
+  }
+
+  if (REPOSITORY_API_TRANSACTION.includes(name)) {
+    return [name, 'transaction'];
   }
 
   return undefined;

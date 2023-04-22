@@ -19,7 +19,7 @@ export class EntityMessage extends JsonMessage {
 export class MethodMessage extends JsonMessage {
   constructor(
     public readonly name: string,
-    public readonly methodType: 'read' | 'write' | 'other',
+    public readonly methodType: 'read' | 'write' | 'other' | 'transaction',
     public readonly callee: string[]
   ) {
     super('method');
