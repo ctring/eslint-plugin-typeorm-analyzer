@@ -6,19 +6,8 @@ import {
 import { MethodMessage } from '../messages';
 import { createMeta, createReport } from '../messages/utils';
 
-const REPOSITORY_API = [
+const REPOSITORY_API_READ = [
   'createQueryBuilder',
-  'create',
-  'merge',
-  'preload',
-  'save',
-  'remove',
-  'insert',
-  'update',
-  'upsert',
-  'delete',
-  'increment',
-  'decrement',
   'count',
   'countBy',
   'sum',
@@ -34,13 +23,27 @@ const REPOSITORY_API = [
   'findOneOrFail',
   'findOneByOrFail',
   'query',
-  'clear'
 ];
+
+const REPOSITORY_API_WRITE = [
+  'create',
+  'merge',
+  'preload',
+  'save',
+  'remove',
+  'insert',
+  'update',
+  'upsert',
+  'delete',
+  'increment',
+  'decrement',
+  'clear'
+]
 
 // Filters out all method calls that are not part of the Repository API.
 function filterRepositoryApiMethods(
   method: TSESTree.PrivateIdentifier | TSESTree.Expression
-) {
+): [string, 'read' | 'write'] | undefined {
   let name: string | undefined;
   if (method.type === AST_NODE_TYPES.Identifier) {
     name = method.name;
@@ -48,11 +51,19 @@ function filterRepositoryApiMethods(
     name = method.value?.toString();
   }
 
-  if (name !== undefined && !REPOSITORY_API.includes(name)) {
-    name = undefined;
+  if (name === undefined) {
+    return undefined;
   }
 
-  return name;
+  if (REPOSITORY_API_READ.includes(name)) {
+    return [name, 'read']
+  }
+
+  if (REPOSITORY_API_WRITE.includes(name)) {
+    return [name, 'write']
+  }
+
+  return undefined;
 }
 
 const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
@@ -65,12 +76,14 @@ const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
         }
 
         const obj = node.callee.object;
-        const method = filterRepositoryApiMethods(node.callee.property);
+        const methodAndType = filterRepositoryApiMethods(node.callee.property);
 
         // Return if the method does not belong to the Repository API.
-        if (method === undefined) {
+        if (methodAndType === undefined) {
           return;
         }
+
+        const [method, methodType] = methodAndType;
 
         const parserServices = ESLintUtils.getParserServices(context);
         const checker = parserServices.program.getTypeChecker();
@@ -94,7 +107,7 @@ const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
           }
         }
 
-        context.report(createReport(node, new MethodMessage(method, allTypes)));
+        context.report(createReport(node, new MethodMessage(method, methodType, allTypes)));
       }
     };
   },

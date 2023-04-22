@@ -25,7 +25,7 @@ ruleTester.run('find-repository-api', findRepositoryApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('save', ['any'])
+            message: new MethodMessage('save', 'write', ['any'])
           }
         }
       ]
@@ -41,7 +41,7 @@ ruleTester.run('find-repository-api', findRepositoryApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('findOne', ['Repository<User>'])
+            message: new MethodMessage('findOne', 'read', ['Repository<User>'])
           }
         }
       ]
@@ -61,13 +61,13 @@ ruleTester.run('find-repository-api', findRepositoryApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('save', ['this', 'Repository<Animal>'])
+            message: new MethodMessage('save', 'write', ['this', 'Repository<Animal>'])
           }
         },
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('create', ['Cat', 'Repository<Animal>'])
+            message: new MethodMessage('create', 'write', ['Cat', 'Repository<Animal>'])
           }
         }
       ]

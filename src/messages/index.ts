@@ -1,5 +1,5 @@
 export class JsonMessage {
-  constructor(public readonly type: string) {}
+  constructor(public readonly type: string) { }
 
   toString(): string {
     return JSON.stringify(this);
@@ -17,7 +17,11 @@ export class EntityMessage extends JsonMessage {
 }
 
 export class MethodMessage extends JsonMessage {
-  constructor(public readonly name: string, public readonly callee: string[]) {
+  constructor(
+    public readonly name: string,
+    public readonly methodType: 'read' | 'write' | 'other',
+    public readonly callee: string[]
+  ) {
     super('method');
   }
 
