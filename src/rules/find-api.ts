@@ -7,7 +7,6 @@ import { MethodMessage } from '../messages';
 import { createMeta, createReport } from '../messages/utils';
 
 const REPOSITORY_API_READ = [
-  'createQueryBuilder',
   'count',
   'countBy',
   'sum',
@@ -21,8 +20,7 @@ const REPOSITORY_API_READ = [
   'findOne',
   'findOneBy',
   'findOneOrFail',
-  'findOneByOrFail',
-  'query'
+  'findOneByOrFail'
 ];
 
 const REPOSITORY_API_WRITE = [
@@ -40,10 +38,12 @@ const REPOSITORY_API_WRITE = [
   'clear'
 ];
 
+const REPOSITORY_API_OTHER = ['createQueryBuilder', 'query'];
+
 // Filters out all method calls that are not part of the Repository API.
 function filterRepositoryApiMethods(
   method: TSESTree.PrivateIdentifier | TSESTree.Expression
-): [string, 'read' | 'write'] | undefined {
+): [string, 'read' | 'write' | 'other'] | undefined {
   let name: string | undefined;
   if (method.type === AST_NODE_TYPES.Identifier) {
     name = method.name;
@@ -63,10 +63,14 @@ function filterRepositoryApiMethods(
     return [name, 'write'];
   }
 
+  if (REPOSITORY_API_OTHER.includes(name)) {
+    return [name, 'other'];
+  }
+
   return undefined;
 }
 
-const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
+const findApi = ESLintUtils.RuleCreator.withoutDocs({
   create(context) {
     return {
       CallExpression(node) {
@@ -119,4 +123,4 @@ const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
   defaultOptions: []
 });
 
-export default findRepositoryApi;
+export default findApi;

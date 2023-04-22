@@ -1,5 +1,5 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
-import findRepositoryApi from '../../src/rules/find-repository-api';
+import findApi from '../../src/rules/find-api';
 import { MethodMessage } from '../../src/messages';
 
 const ruleTester = new ESLintUtils.RuleTester({
@@ -10,7 +10,7 @@ const ruleTester = new ESLintUtils.RuleTester({
   }
 });
 
-ruleTester.run('find-repository-api', findRepositoryApi, {
+ruleTester.run('find-repository-api', findApi, {
   valid: [
     {
       code: 'repository.noFind()'
