@@ -1,5 +1,5 @@
 export class JsonMessage {
-  constructor(public readonly type: string) { }
+  constructor(public readonly type: string) {}
 
   toString(): string {
     return JSON.stringify(this);

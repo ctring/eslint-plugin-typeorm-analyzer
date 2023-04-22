@@ -22,7 +22,7 @@ const REPOSITORY_API_READ = [
   'findOneBy',
   'findOneOrFail',
   'findOneByOrFail',
-  'query',
+  'query'
 ];
 
 const REPOSITORY_API_WRITE = [
@@ -38,7 +38,7 @@ const REPOSITORY_API_WRITE = [
   'increment',
   'decrement',
   'clear'
-]
+];
 
 // Filters out all method calls that are not part of the Repository API.
 function filterRepositoryApiMethods(
@@ -56,11 +56,11 @@ function filterRepositoryApiMethods(
   }
 
   if (REPOSITORY_API_READ.includes(name)) {
-    return [name, 'read']
+    return [name, 'read'];
   }
 
   if (REPOSITORY_API_WRITE.includes(name)) {
-    return [name, 'write']
+    return [name, 'write'];
   }
 
   return undefined;
@@ -107,7 +107,9 @@ const findRepositoryApi = ESLintUtils.RuleCreator.withoutDocs({
           }
         }
 
-        context.report(createReport(node, new MethodMessage(method, methodType, allTypes)));
+        context.report(
+          createReport(node, new MethodMessage(method, methodType, allTypes))
+        );
       }
     };
   },

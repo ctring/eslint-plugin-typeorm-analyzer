@@ -61,13 +61,19 @@ ruleTester.run('find-repository-api', findRepositoryApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('save', 'write', ['this', 'Repository<Animal>'])
+            message: new MethodMessage('save', 'write', [
+              'this',
+              'Repository<Animal>'
+            ])
           }
         },
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('create', 'write', ['Cat', 'Repository<Animal>'])
+            message: new MethodMessage('create', 'write', [
+              'Cat',
+              'Repository<Animal>'
+            ])
           }
         }
       ]
