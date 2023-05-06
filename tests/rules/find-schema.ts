@@ -19,12 +19,40 @@ ruleTester.run('find-schema', findSchema, {
       class User {
         @PrimaryGeneratedColumn()
         id: number;
-
-        @Column()
-        name: string;
-
-        @Column()
-        email: string;
+      }
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new EntityMessage('User')
+          }
+        }
+      ]
+    },
+    {
+      code: `
+      @ViewEntity(expression='SELECT * FROM user')
+      class User {
+        @PrimaryGeneratedColumn()
+        id: number;
+      }
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new EntityMessage('User')
+          }
+        }
+      ]
+    },
+    {
+      code: `
+      @ChildEntity()
+      class User {
+        @PrimaryGeneratedColumn()
+        id: number;
       }
       `,
       errors: [

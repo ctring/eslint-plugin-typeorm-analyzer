@@ -12,11 +12,13 @@ const findSchema = ESLintUtils.RuleCreator.withoutDocs({
         }
 
         for (const decorator of node.decorators) {
-          // Find the @Entity() decorator.
+          // Find the @Entity, @ViewEntity, and @ChildEntity decorators.
           if (
             decorator.expression.type === AST_NODE_TYPES.CallExpression &&
             decorator.expression.callee.type === AST_NODE_TYPES.Identifier &&
-            decorator.expression.callee.name === 'Entity'
+            ['Entity', 'ViewEntity', 'ChildEntity'].includes(
+              decorator.expression.callee.name
+            )
           ) {
             context.report(createReport(node, new EntityMessage(node.id.name)));
             break;
