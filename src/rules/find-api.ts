@@ -1,7 +1,8 @@
 import {
   AST_NODE_TYPES,
   ESLintUtils,
-  TSESTree
+  TSESTree,
+  ParserServices
 } from '@typescript-eslint/utils';
 import { MethodMessage } from '../messages';
 import { createMeta, createReport } from '../messages/utils';
@@ -76,6 +77,82 @@ function filterRepositoryApiMethods(
   return undefined;
 }
 
+function getType(parserServices: ParserServices, node: TSESTree.Node) {
+  return parserServices.program
+    .getTypeChecker()
+    .getTypeAtLocation(parserServices.esTreeNodeToTSNodeMap.get(node));
+}
+
+function parseCalleeTypes(
+  parserServices: ParserServices,
+  calleeObj: TSESTree.Expression
+) {
+  const objType = getType(parserServices, calleeObj);
+  const checker = parserServices.program.getTypeChecker();
+  const allTypes = [checker.typeToString(objType)];
+  const symbol = objType.getSymbol();
+  if (symbol !== undefined) {
+    const baseTypes = checker.getDeclaredTypeOfSymbol(symbol).getBaseTypes();
+    if (baseTypes !== undefined) {
+      for (const type of baseTypes) {
+        allTypes.push(checker.typeToString(type));
+      }
+    }
+  }
+  return allTypes;
+}
+
+function parseFindOptionsWhere(
+  arg: TSESTree.Expression | TSESTree.SpreadElement
+): Set<string> {
+  const columns: string[] = [];
+  switch (arg.type) {
+    case AST_NODE_TYPES.SpreadElement:
+      columns.push(...parseFindOptionsWhere(arg.argument));
+      break;
+    case AST_NODE_TYPES.ArrayExpression:
+      for (const element of arg.elements) {
+        if (element === null) {
+          continue;
+        }
+        columns.push(...parseFindOptionsWhere(element));
+      }
+      break;
+    case AST_NODE_TYPES.ObjectExpression:
+      for (const property of arg.properties) {
+        if (property.type === AST_NODE_TYPES.SpreadElement) {
+          columns.push(...parseFindOptionsWhere(property));
+        } else {
+          if (property.key.type === AST_NODE_TYPES.Identifier) {
+            columns.push(property.key.name);
+          } else if (property.key.type === AST_NODE_TYPES.Literal) {
+            if (property.key.value !== null) {
+              const col = property.key.value.toString();
+              if (col !== '') {
+                columns.push(col);
+              }
+            }
+          }
+        }
+      }
+      break;
+  }
+  return new Set(columns);
+}
+
+function parseLookupColumns(
+  method: string,
+  args: TSESTree.CallExpressionArgument[]
+): Set<string> {
+  const columns: string[] = [];
+  if (method === 'findOneBy') {
+    for (const arg of args) {
+      columns.push(...parseFindOptionsWhere(arg));
+    }
+  }
+  return new Set(columns);
+}
+
 const findApi = ESLintUtils.RuleCreator.withoutDocs({
   create(context) {
     return {
@@ -85,40 +162,29 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
           return;
         }
 
-        const obj = node.callee.object;
+        // Check if the method belong to the Repository API.
         const methodAndType = filterRepositoryApiMethods(node.callee.property);
-
-        // Return if the method does not belong to the Repository API.
         if (methodAndType === undefined) {
           return;
         }
 
-        const [method, methodType] = methodAndType;
-
         const parserServices = ESLintUtils.getParserServices(context);
-        const checker = parserServices.program.getTypeChecker();
-        const objType = checker.getTypeAtLocation(
-          parserServices.esTreeNodeToTSNodeMap.get(obj)
-        );
 
-        // Get the type of the callee.
-        let allTypes = [checker.typeToString(objType)];
+        const allTypes = parseCalleeTypes(parserServices, node.callee.object);
 
-        // Collect all base types.
-        const symbol = objType.getSymbol();
-        if (symbol !== undefined) {
-          const baseTypes = checker
-            .getDeclaredTypeOfSymbol(symbol)
-            .getBaseTypes();
-          if (baseTypes !== undefined) {
-            for (const type of baseTypes) {
-              allTypes.push(checker.typeToString(type));
-            }
-          }
-        }
+        const [method, methodType] = methodAndType;
+        const columns = parseLookupColumns(method, node.arguments);
 
         context.report(
-          createReport(node, new MethodMessage(method, methodType, allTypes))
+          createReport(
+            node,
+            new MethodMessage(
+              method,
+              methodType,
+              allTypes,
+              [...columns.values()].sort()
+            )
+          )
         );
       }
     };

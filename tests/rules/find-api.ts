@@ -10,7 +10,7 @@ const ruleTester = new ESLintUtils.RuleTester({
   }
 });
 
-ruleTester.run('find-repository-api', findApi, {
+ruleTester.run('find-api', findApi, {
   valid: [
     {
       code: 'repository.noFind()'
@@ -25,7 +25,7 @@ ruleTester.run('find-repository-api', findApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('save', 'write', ['any'])
+            message: new MethodMessage('save', 'write', ['any'], [])
           }
         }
       ]
@@ -35,13 +35,25 @@ ruleTester.run('find-repository-api', findApi, {
       class Repository<T> {}
       class User {}
       let repository = new Repository<User>();
-      repository.findOne();
+      repository.findOneBy({
+        name: "John",
+        age: 18,
+        "address": {
+          "street": "Main Street",
+          "city": "New York"  
+        }
+      });
       `,
       errors: [
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('findOne', 'read', ['Repository<User>'])
+            message: new MethodMessage(
+              'findOneBy',
+              'read',
+              ['Repository<User>'],
+              ['address', 'age', 'name']
+            )
           }
         }
       ]
@@ -61,19 +73,23 @@ ruleTester.run('find-repository-api', findApi, {
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('save', 'write', [
-              'this',
-              'Repository<Animal>'
-            ])
+            message: new MethodMessage(
+              'save',
+              'write',
+              ['this', 'Repository<Animal>'],
+              []
+            )
           }
         },
         {
           messageId: 'json',
           data: {
-            message: new MethodMessage('create', 'write', [
-              'Cat',
-              'Repository<Animal>'
-            ])
+            message: new MethodMessage(
+              'create',
+              'write',
+              ['Cat', 'Repository<Animal>'],
+              []
+            )
           }
         }
       ]
