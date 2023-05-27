@@ -112,23 +112,23 @@ function parseCalleeTypes(
 function parseFindOptionsWhere(
   arg: TSESTree.Expression | TSESTree.SpreadElement
 ): Set<Attribute> {
-  const columns: Attribute[] = [];
+  const attributes: Attribute[] = [];
   switch (arg.type) {
     case AST_NODE_TYPES.SpreadElement:
-      columns.push(...parseFindOptionsWhere(arg.argument));
+      attributes.push(...parseFindOptionsWhere(arg.argument));
       break;
     case AST_NODE_TYPES.ArrayExpression:
       for (const element of arg.elements) {
         if (element === null) {
           continue;
         }
-        columns.push(...parseFindOptionsWhere(element));
+        attributes.push(...parseFindOptionsWhere(element));
       }
       break;
     case AST_NODE_TYPES.ObjectExpression:
       for (const property of arg.properties) {
         if (property.type === AST_NODE_TYPES.SpreadElement) {
-          columns.push(...parseFindOptionsWhere(property));
+          attributes.push(...parseFindOptionsWhere(property));
         } else {
           var name: string | undefined;
           if (property.key.type === AST_NODE_TYPES.Identifier) {
@@ -138,7 +138,7 @@ function parseFindOptionsWhere(
           }
           if (name) {
             const loc = property.key.loc;
-            columns.push(
+            attributes.push(
               new Attribute(
                 name,
                 loc.start.line,
@@ -152,7 +152,7 @@ function parseFindOptionsWhere(
       }
       break;
   }
-  return new Set(columns);
+  return new Set(attributes);
 }
 
 function parseFindOptions(
@@ -187,11 +187,11 @@ function parseFindOptions(
   return new Set();
 }
 
-function parseLookupColumns(
+function parseLookupAttributes(
   method: string,
   args: TSESTree.CallExpressionArgument[]
 ): Set<Attribute> {
-  const columns: Attribute[] = [];
+  const attributes: Attribute[] = [];
   switch (method) {
     case 'countBy':
     case 'findBy':
@@ -204,7 +204,7 @@ function parseLookupColumns(
     case 'delete':
     case 'softDelete':
     case 'restore':
-      columns.push(...parseFindOptionsWhere(args[0]));
+      attributes.push(...parseFindOptionsWhere(args[0]));
       break;
     case 'count':
     case 'exist':
@@ -212,16 +212,16 @@ function parseLookupColumns(
     case 'findAndCount':
     case 'findOne':
     case 'findOneOrFail':
-      columns.push(...parseFindOptions(args[0]));
+      attributes.push(...parseFindOptions(args[0]));
       break;
     case 'sum':
     case 'average':
     case 'minimum':
     case 'maximum':
-      columns.push(...parseFindOptionsWhere(args[1]));
+      attributes.push(...parseFindOptionsWhere(args[1]));
       break;
   }
-  return new Set(columns);
+  return new Set(attributes);
 }
 
 const findApi = ESLintUtils.RuleCreator.withoutDocs({
@@ -244,7 +244,7 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
         const allTypes = parseCalleeTypes(parserServices, node.callee.object);
 
         const [method, methodType] = methodAndType;
-        const columns = parseLookupColumns(method, node.arguments);
+        const attributes = parseLookupAttributes(method, node.arguments);
 
         context.report(
           createReport(
@@ -253,7 +253,9 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
               method,
               methodType,
               allTypes,
-              [...columns.values()].sort((a, b) => a.name.localeCompare(b.name))
+              [...attributes.values()].sort((a, b) =>
+                a.name.localeCompare(b.name)
+              )
             )
           )
         );
