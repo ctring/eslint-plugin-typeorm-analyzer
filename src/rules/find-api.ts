@@ -200,6 +200,10 @@ function parseLookupColumns(
     case 'findOneByOrFail':
     case 'increment':
     case 'decrement':
+    case 'update':
+    case 'delete':
+    case 'softDelete':
+    case 'restore':
       columns.push(...parseFindOptionsWhere(args[0]));
       break;
     case 'count':
@@ -215,11 +219,6 @@ function parseLookupColumns(
     case 'minimum':
     case 'maximum':
       columns.push(...parseFindOptionsWhere(args[1]));
-      break;
-    case 'update':
-    case 'delete':
-    case 'softDelete':
-    case 'restore':
       break;
   }
   return new Set(columns);
