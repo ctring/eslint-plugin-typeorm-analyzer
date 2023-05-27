@@ -7,41 +7,48 @@ import {
 import { MethodMessage } from '../messages';
 import { createMeta, createReport } from '../messages/utils';
 
-const REPOSITORY_API_READ = [
-  'count',
+const API_READ = [
   'countBy',
   'sum',
   'average',
   'minimum',
   'maximum',
-  'find',
   'findBy',
-  'findAndCount',
   'findAndCountBy',
-  'findOne',
   'findOneBy',
+  'findOneByOrFail',
+  'count',
+  'exist',
+  'find',
+  'findAndCount',
+  'findOne',
   'findOneOrFail',
-  'findOneByOrFail'
+  'findByIds',
+  'findOneByIds'
 ];
 
-const REPOSITORY_API_WRITE = [
+const API_WRITE = [
+  'clear',
   'create',
+  'insert',
   'merge',
   'preload',
   'save',
+  'softRemove',
+  'recover',
   'remove',
-  'insert',
-  'update',
   'upsert',
+  'update',
   'delete',
   'increment',
   'decrement',
-  'clear'
+  'softDelete',
+  'restore'
 ];
 
-const REPOSITORY_API_OTHER = ['createQueryBuilder', 'query'];
+const API_OTHER = ['createQueryBuilder', 'query'];
 
-const REPOSITORY_API_TRANSACTION = ['transaction', 'startTransaction'];
+const API_TRANSACTION = ['transaction', 'startTransaction'];
 
 // Filters out all method calls that are not part of the Repository API.
 function filterRepositoryApiMethods(
@@ -58,19 +65,19 @@ function filterRepositoryApiMethods(
     return undefined;
   }
 
-  if (REPOSITORY_API_READ.includes(name)) {
+  if (API_READ.includes(name)) {
     return [name, 'read'];
   }
 
-  if (REPOSITORY_API_WRITE.includes(name)) {
+  if (API_WRITE.includes(name)) {
     return [name, 'write'];
   }
 
-  if (REPOSITORY_API_OTHER.includes(name)) {
+  if (API_OTHER.includes(name)) {
     return [name, 'other'];
   }
 
-  if (REPOSITORY_API_TRANSACTION.includes(name)) {
+  if (API_TRANSACTION.includes(name)) {
     return [name, 'transaction'];
   }
 
@@ -140,15 +147,72 @@ function parseFindOptionsWhere(
   return new Set(columns);
 }
 
+function parseFindOptions(
+  args: TSESTree.Expression | TSESTree.SpreadElement
+): Set<string> {
+  if (args.type === AST_NODE_TYPES.SpreadElement) {
+    return parseFindOptions(args.argument);
+  }
+  if (args.type === AST_NODE_TYPES.ObjectExpression) {
+    for (const property of args.properties) {
+      if (
+        property.type === AST_NODE_TYPES.Property &&
+        property.key.type === AST_NODE_TYPES.Identifier &&
+        property.key.name === 'where'
+      ) {
+        if (
+          property.value.type === AST_NODE_TYPES.ObjectExpression ||
+          property.value.type === AST_NODE_TYPES.ArrayExpression
+        ) {
+          return parseFindOptionsWhere(property.value);
+        } else if (
+          property.value.type === AST_NODE_TYPES.AssignmentExpression
+        ) {
+          return parseFindOptionsWhere(property.value.right);
+        }
+      }
+    }
+    // In the old versions of TypeORM, the FindOptionsWhere was sometimes used
+    // in place of FindOptions.
+    return parseFindOptionsWhere(args);
+  }
+  return new Set();
+}
+
 function parseLookupColumns(
   method: string,
   args: TSESTree.CallExpressionArgument[]
 ): Set<string> {
   const columns: string[] = [];
-  if (method === 'findOneBy') {
-    for (const arg of args) {
-      columns.push(...parseFindOptionsWhere(arg));
-    }
+  switch (method) {
+    case 'countBy':
+    case 'findBy':
+    case 'findAndCountBy':
+    case 'findOneBy':
+    case 'findOneByOrFail':
+    case 'increment':
+    case 'decrement':
+      columns.push(...parseFindOptionsWhere(args[0]));
+      break;
+    case 'count':
+    case 'exist':
+    case 'find':
+    case 'findAndCount':
+    case 'findOne':
+    case 'findOneOrFail':
+      columns.push(...parseFindOptions(args[0]));
+      break;
+    case 'sum':
+    case 'average':
+    case 'minimum':
+    case 'maximum':
+      columns.push(...parseFindOptionsWhere(args[1]));
+      break;
+    case 'update':
+    case 'delete':
+    case 'softDelete':
+    case 'restore':
+      break;
   }
   return new Set(columns);
 }

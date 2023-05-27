@@ -19,19 +19,6 @@ ruleTester.run('find-api', findApi, {
   invalid: [
     {
       code: `
-      user.save();
-      `,
-      errors: [
-        {
-          messageId: 'json',
-          data: {
-            message: new MethodMessage('save', 'write', ['any'], [])
-          }
-        }
-      ]
-    },
-    {
-      code: `
       class Repository<T> {}
       class User {}
       let repository = new Repository<User>();
@@ -41,6 +28,9 @@ ruleTester.run('find-api', findApi, {
         "address": {
           "street": "Main Street",
           "city": "New York"  
+        },
+        ...{
+          "occupation": "Developer"
         }
       });
       `,
@@ -52,7 +42,7 @@ ruleTester.run('find-api', findApi, {
               'findOneBy',
               'read',
               ['Repository<User>'],
-              ['address', 'age', 'name']
+              ['address', 'age', 'name', 'occupation']
             )
           }
         }
@@ -61,13 +51,13 @@ ruleTester.run('find-api', findApi, {
     {
       code: `
       class Repository<T> {}
-      class Cat extends Repository<Animal> {
+      class User extends Repository<Person> {
         doSave() {
           return this.save();
         }
       }
-      let cat = new Cat();
-      cat.create();
+      let user = new User();
+      user.increment([{firstname: "John"}, {lastname: "Doe"}], "age", 1);
       `,
       errors: [
         {
@@ -76,7 +66,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'save',
               'write',
-              ['this', 'Repository<Animal>'],
+              ['this', 'Repository<Person>'],
               []
             )
           }
@@ -85,10 +75,53 @@ ruleTester.run('find-api', findApi, {
           messageId: 'json',
           data: {
             message: new MethodMessage(
-              'create',
+              'increment',
               'write',
-              ['Cat', 'Repository<Animal>'],
-              []
+              ['User', 'Repository<Person>'],
+              ['firstname', 'lastname']
+            )
+          }
+        }
+      ]
+    },
+    {
+      code: `
+      class Repository<T> {}
+      class User {}
+      let repository = new Repository<User>();
+      repository.count({
+        where: {
+          name: "John",
+        }
+      });
+      repository.findAndCount({
+        where: [{
+          firstname: "John",
+        }, {
+          lastname: "Doe",
+        }]
+      });
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage(
+              'count',
+              'read',
+              ['Repository<User>'],
+              ['name']
+            )
+          }
+        },
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage(
+              'findAndCount',
+              'read',
+              ['Repository<User>'],
+              ['firstname', 'lastname']
             )
           }
         }
