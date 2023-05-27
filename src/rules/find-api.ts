@@ -204,7 +204,9 @@ function parseLookupAttributes(
     case 'delete':
     case 'softDelete':
     case 'restore':
-      attributes.push(...parseFindOptionsWhere(args[0]));
+      if (args.length > 0) {
+        attributes.push(...parseFindOptionsWhere(args[0]));
+      }
       break;
     case 'count':
     case 'exist':
@@ -212,13 +214,17 @@ function parseLookupAttributes(
     case 'findAndCount':
     case 'findOne':
     case 'findOneOrFail':
-      attributes.push(...parseFindOptions(args[0]));
+      if (args.length > 0) {
+        attributes.push(...parseFindOptions(args[0]));
+      }
       break;
     case 'sum':
     case 'average':
     case 'minimum':
     case 'maximum':
-      attributes.push(...parseFindOptionsWhere(args[1]));
+      if (args.length > 1) {
+        attributes.push(...parseFindOptionsWhere(args[1]));
+      }
       break;
   }
   return new Set(attributes);
