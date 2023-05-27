@@ -1,6 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
 import findApi from '../../src/rules/find-api';
-import { MethodMessage } from '../../src/messages';
+import { Attribute, MethodMessage } from '../../src/messages';
 
 const ruleTester = new ESLintUtils.RuleTester({
   parser: '@typescript-eslint/parser',
@@ -42,7 +42,12 @@ ruleTester.run('find-api', findApi, {
               'findOneBy',
               'read',
               ['Repository<User>'],
-              ['address', 'age', 'name', 'occupation']
+              [
+                new Attribute('address', 8, 8, 8, 17),
+                new Attribute('age', 7, 8, 7, 11),
+                new Attribute('name', 6, 8, 6, 12),
+                new Attribute('occupation', 13, 10, 13, 22)
+              ]
             )
           }
         }
@@ -78,7 +83,10 @@ ruleTester.run('find-api', findApi, {
               'increment',
               'write',
               ['User', 'Repository<Person>'],
-              ['firstname', 'lastname']
+              [
+                new Attribute('firstname', 9, 23, 9, 32),
+                new Attribute('lastname', 9, 44, 9, 52)
+              ]
             )
           }
         }
@@ -110,7 +118,7 @@ ruleTester.run('find-api', findApi, {
               'count',
               'read',
               ['Repository<User>'],
-              ['name']
+              [new Attribute('name', 7, 10, 7, 14)]
             )
           }
         },
@@ -121,7 +129,10 @@ ruleTester.run('find-api', findApi, {
               'findAndCount',
               'read',
               ['Repository<User>'],
-              ['firstname', 'lastname']
+              [
+                new Attribute('firstname', 12, 10, 12, 19),
+                new Attribute('lastname', 14, 10, 14, 18)
+              ]
             )
           }
         }

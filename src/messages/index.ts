@@ -16,12 +16,22 @@ export class EntityMessage extends JsonMessage {
   }
 }
 
+export class Attribute {
+  constructor(
+    public readonly name: string,
+    public readonly start_line: number,
+    public readonly start_column: number,
+    public readonly end_line: number,
+    public readonly end_column: number
+  ) {}
+}
+
 export class MethodMessage extends JsonMessage {
   constructor(
     public readonly name: string,
     public readonly methodType: 'read' | 'write' | 'other' | 'transaction',
     public readonly callee: string[],
-    public readonly columns: string[]
+    public readonly attributes: Attribute[]
   ) {
     super('method');
   }

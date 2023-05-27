@@ -4,7 +4,7 @@ import {
   TSESTree,
   ParserServices
 } from '@typescript-eslint/utils';
-import { MethodMessage } from '../messages';
+import { Attribute, MethodMessage } from '../messages';
 import { createMeta, createReport } from '../messages/utils';
 
 const API_READ = [
@@ -111,8 +111,8 @@ function parseCalleeTypes(
 
 function parseFindOptionsWhere(
   arg: TSESTree.Expression | TSESTree.SpreadElement
-): Set<string> {
-  const columns: string[] = [];
+): Set<Attribute> {
+  const columns: Attribute[] = [];
   switch (arg.type) {
     case AST_NODE_TYPES.SpreadElement:
       columns.push(...parseFindOptionsWhere(arg.argument));
@@ -130,15 +130,23 @@ function parseFindOptionsWhere(
         if (property.type === AST_NODE_TYPES.SpreadElement) {
           columns.push(...parseFindOptionsWhere(property));
         } else {
+          var name: string | undefined;
           if (property.key.type === AST_NODE_TYPES.Identifier) {
-            columns.push(property.key.name);
+            name = property.key.name;
           } else if (property.key.type === AST_NODE_TYPES.Literal) {
-            if (property.key.value !== null) {
-              const col = property.key.value.toString();
-              if (col !== '') {
-                columns.push(col);
-              }
-            }
+            name = property.key.value?.toString();
+          }
+          if (name) {
+            const loc = property.key.loc;
+            columns.push(
+              new Attribute(
+                name,
+                loc.start.line,
+                loc.start.column,
+                loc.end.line,
+                loc.end.column
+              )
+            );
           }
         }
       }
@@ -149,7 +157,7 @@ function parseFindOptionsWhere(
 
 function parseFindOptions(
   args: TSESTree.Expression | TSESTree.SpreadElement
-): Set<string> {
+): Set<Attribute> {
   if (args.type === AST_NODE_TYPES.SpreadElement) {
     return parseFindOptions(args.argument);
   }
@@ -182,8 +190,8 @@ function parseFindOptions(
 function parseLookupColumns(
   method: string,
   args: TSESTree.CallExpressionArgument[]
-): Set<string> {
-  const columns: string[] = [];
+): Set<Attribute> {
+  const columns: Attribute[] = [];
   switch (method) {
     case 'countBy':
     case 'findBy':
@@ -246,7 +254,7 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
               method,
               methodType,
               allTypes,
-              [...columns.values()].sort()
+              [...columns.values()].sort((a, b) => a.name.localeCompare(b.name))
             )
           )
         );
