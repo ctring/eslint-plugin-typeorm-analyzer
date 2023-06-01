@@ -137,6 +137,33 @@ ruleTester.run('find-api', findApi, {
           }
         }
       ]
+    },
+    {
+      code: `
+      class Repository<T> {}
+      class User {}
+      let repository = new Repository<User>();
+      repository.findOne({
+        select: ["id"],
+        order: {
+          age: "DESC",
+        },
+        take: 10,
+      });
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage(
+              'findOne',
+              'read',
+              ['Repository<User>'],
+              []
+            )
+          }
+        }
+      ]
     }
   ]
 });

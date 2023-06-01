@@ -162,27 +162,54 @@ function parseFindOptions(
     return parseFindOptions(args.argument);
   }
   if (args.type === AST_NODE_TYPES.ObjectExpression) {
+    let isLegacyObject = true;
     for (const property of args.properties) {
       if (
         property.type === AST_NODE_TYPES.Property &&
-        property.key.type === AST_NODE_TYPES.Identifier &&
-        property.key.name === 'where'
+        property.key.type === AST_NODE_TYPES.Identifier
       ) {
-        if (
-          property.value.type === AST_NODE_TYPES.ObjectExpression ||
-          property.value.type === AST_NODE_TYPES.ArrayExpression
-        ) {
-          return parseFindOptionsWhere(property.value);
+        if (property.key.name === 'where') {
+          if (
+            property.value.type === AST_NODE_TYPES.ObjectExpression ||
+            property.value.type === AST_NODE_TYPES.ArrayExpression
+          ) {
+            return parseFindOptionsWhere(property.value);
+          } else if (
+            property.value.type === AST_NODE_TYPES.AssignmentExpression
+          ) {
+            return parseFindOptionsWhere(property.value.right);
+          }
+          isLegacyObject = false;
         } else if (
-          property.value.type === AST_NODE_TYPES.AssignmentExpression
+          [
+            'comment',
+            'select',
+            'relations',
+            'relationLoadStrategy',
+            'join',
+            'order',
+            'cache',
+            'lock',
+            'withDeleted',
+            'loadRelationIds',
+            'loadEagerRelations',
+            'transaction',
+            'skip',
+            'take'
+          ].includes(property.key.name)
         ) {
-          return parseFindOptionsWhere(property.value.right);
+          // This check for old version of TypeORM may cause false positives if
+          // one of these keywords is used as a column in a table but it is unlikely
+          // to happen and we can catch it during manual checking.
+          isLegacyObject = false;
         }
       }
     }
     // In the old versions of TypeORM, the FindOptionsWhere was sometimes used
     // in place of FindOptions.
-    return parseFindOptionsWhere(args);
+    if (isLegacyObject) {
+      return parseFindOptionsWhere(args);
+    }
   }
   return new Set();
 }
