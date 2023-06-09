@@ -257,6 +257,20 @@ function parseLookupAttributes(
   return new Set(attributes);
 }
 
+function getCallee(
+  node: TSESTree.Expression | TSESTree.PrivateIdentifier
+): string {
+  switch (node.type) {
+    case AST_NODE_TYPES.Identifier:
+      return node.name;
+    case AST_NODE_TYPES.MemberExpression:
+      return getCallee(node.property);
+    case AST_NODE_TYPES.ThisExpression:
+      return 'this';
+  }
+  return '';
+}
+
 const findApi = ESLintUtils.RuleCreator.withoutDocs({
   create(context) {
     return {
@@ -285,6 +299,7 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
             new MethodMessage(
               method,
               methodType,
+              getCallee(node.callee.object),
               allTypes,
               [...attributes.values()].sort((a, b) =>
                 a.name.localeCompare(b.name)

@@ -21,8 +21,13 @@ ruleTester.run('find-api', findApi, {
       code: `
       class Repository<T> {}
       class User {}
-      let repository = new Repository<User>();
-      repository.findOneBy({
+      class Wrapper {
+        repository: Repository<User>;
+        constructor() {
+          this.repository = new Repository<User>();
+        }
+      }
+      new Wrapper().repository.findOneBy({
         name: "John",
         age: 18,
         "address": {
@@ -41,12 +46,13 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'findOneBy',
               'read',
+              'repository',
               ['Repository<User>'],
               [
-                new Attribute('address', 8, 8, 8, 17),
-                new Attribute('age', 7, 8, 7, 11),
-                new Attribute('name', 6, 8, 6, 12),
-                new Attribute('occupation', 13, 10, 13, 22)
+                new Attribute('address', 13, 8, 13, 17),
+                new Attribute('age', 12, 8, 12, 11),
+                new Attribute('name', 11, 8, 11, 12),
+                new Attribute('occupation', 18, 10, 18, 22)
               ]
             )
           }
@@ -71,6 +77,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'save',
               'write',
+              'this',
               ['this', 'Repository<Person>'],
               []
             )
@@ -82,6 +89,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'increment',
               'write',
+              'user',
               ['User', 'Repository<Person>'],
               [
                 new Attribute('firstname', 9, 23, 9, 32),
@@ -117,6 +125,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'count',
               'read',
+              'repository',
               ['Repository<User>'],
               [new Attribute('name', 7, 10, 7, 14)]
             )
@@ -128,6 +137,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'findAndCount',
               'read',
+              'repository',
               ['Repository<User>'],
               [
                 new Attribute('firstname', 12, 10, 12, 19),
@@ -142,8 +152,7 @@ ruleTester.run('find-api', findApi, {
       code: `
       class Repository<T> {}
       class User {}
-      let repository = new Repository<User>();
-      repository.findOne({
+      new Repository<User>().findOne({
         select: ["id"],
         order: {
           age: "DESC",
@@ -158,6 +167,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'findOne',
               'read',
+              '',
               ['Repository<User>'],
               []
             )
