@@ -167,7 +167,7 @@ ruleTester.run('find-api', findApi, {
             message: new MethodMessage(
               'findOne',
               'read',
-              '',
+              'new Repository<User>()',
               ['Repository<User>'],
               []
             )
@@ -198,6 +198,42 @@ ruleTester.run('find-api', findApi, {
           messageId: 'json',
           data: {
             message: new MethodMessage('txnB', 'transaction', '', ['any'], [])
+          }
+        }
+      ]
+    },
+    {
+      code: `
+      one.two.three(a, b, c).findOne({});
+      one
+        .two()
+        .three()({
+          a, b, c
+        }).findOne({});
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage(
+              'findOne',
+              'read',
+              'three(a, b, c)',
+              ['any'],
+              []
+            )
+          }
+        },
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage(
+              'findOne',
+              'read',
+              'three()({a, b, c})',
+              ['any'],
+              []
+            )
           }
         }
       ]

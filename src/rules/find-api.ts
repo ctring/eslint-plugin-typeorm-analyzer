@@ -6,6 +6,7 @@ import {
 } from '@typescript-eslint/utils';
 import { Attribute, MethodMessage } from '../messages';
 import { createMeta, createReport } from '../messages/utils';
+import { RuleContext } from '@typescript-eslint/utils/dist/ts-eslint';
 
 const API_READ = [
   'countBy',
@@ -257,18 +258,30 @@ function parseLookupAttributes(
   return new Set(attributes);
 }
 
-function getCallee(
+function simplifyObject(
+  context: RuleContext<'json', never[]>,
   node: TSESTree.Expression | TSESTree.PrivateIdentifier
 ): string {
-  switch (node.type) {
-    case AST_NODE_TYPES.Identifier:
-      return node.name;
-    case AST_NODE_TYPES.MemberExpression:
-      return getCallee(node.property);
-    case AST_NODE_TYPES.ThisExpression:
-      return 'this';
+  function getText(
+    node:
+      | TSESTree.Expression
+      | TSESTree.SpreadElement
+      | TSESTree.PrivateIdentifier
+  ): string {
+    return context
+      .getSourceCode()
+      .getText(node)
+      .replace(/(  |\n|\t)/g, '');
   }
-  return '';
+
+  if (node.type === AST_NODE_TYPES.MemberExpression) {
+    return simplifyObject(context, node.property);
+  }
+  if (node.type === AST_NODE_TYPES.CallExpression) {
+    const args = node.arguments.map((arg) => getText(arg));
+    return simplifyObject(context, node.callee) + '(' + args.join(', ') + ')';
+  }
+  return getText(node);
 }
 
 const findApi = ESLintUtils.RuleCreator.withoutDocs({
@@ -299,7 +312,7 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
             new MethodMessage(
               method,
               methodType,
-              getCallee(node.callee.object),
+              simplifyObject(context, node.callee.object),
               allTypes,
               [...attributes.values()].sort((a, b) =>
                 a.name.localeCompare(b.name)

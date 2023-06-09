@@ -30,8 +30,8 @@ export class MethodMessage extends JsonMessage {
   constructor(
     public readonly name: string,
     public readonly methodType: 'read' | 'write' | 'other' | 'transaction',
-    public readonly callee: string,
-    public readonly calleeTypes: string[],
+    public readonly object: string,
+    public readonly objectTypes: string[],
     public readonly attributes: Attribute[]
   ) {
     super('method');
