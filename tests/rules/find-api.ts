@@ -174,6 +174,33 @@ ruleTester.run('find-api', findApi, {
           }
         }
       ]
+    },
+    {
+      code: `
+      class Service {
+        @Transaction
+        txnA() {
+        }
+
+        @LazyTransaction()
+        async txnB() {
+        }
+      }
+      `,
+      errors: [
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage('txnA', 'transaction', '', ['any'], [])
+          }
+        },
+        {
+          messageId: 'json',
+          data: {
+            message: new MethodMessage('txnB', 'transaction', '', ['any'], [])
+          }
+        }
+      ]
     }
   ]
 });

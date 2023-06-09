@@ -307,6 +307,46 @@ const findApi = ESLintUtils.RuleCreator.withoutDocs({
             )
           )
         );
+      },
+
+      MethodDefinition(node) {
+        // Return if the class is not decorated.
+        if (!node.decorators) {
+          return;
+        }
+        for (const decorator of node.decorators) {
+          // Find the @Transaction, @LazyTransaction decorators.
+          let decoratorName = '';
+          switch (decorator.expression.type) {
+            case AST_NODE_TYPES.Identifier:
+              decoratorName = decorator.expression.name;
+              break;
+            case AST_NODE_TYPES.CallExpression:
+              if (
+                decorator.expression.callee.type === AST_NODE_TYPES.Identifier
+              ) {
+                decoratorName = decorator.expression.callee.name;
+              }
+              break;
+          }
+          if (['Transaction', 'LazyTransaction'].includes(decoratorName)) {
+            context.report(
+              createReport(
+                node,
+                new MethodMessage(
+                  node.key.type === AST_NODE_TYPES.Identifier
+                    ? node.key.name
+                    : '',
+                  'transaction',
+                  '',
+                  ['any'],
+                  []
+                )
+              )
+            );
+            break;
+          }
+        }
       }
     };
   },
