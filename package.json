@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-typeorm-analyzer",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "exports": {
     ".": "./dist/src/index.js",
